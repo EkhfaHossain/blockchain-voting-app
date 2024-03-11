@@ -6,7 +6,9 @@ async function main() {
   const create = await Create.deploy();
   await create.waitForDeployment();
 
-  console.log("Create contract deployed to:", create.address);
+  //console.log(create);
+
+  console.log("Create contract deployed to:", create.target);
 }
 
 main().catch((error) => {
