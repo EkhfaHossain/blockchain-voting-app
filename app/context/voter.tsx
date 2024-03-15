@@ -29,8 +29,21 @@ export interface IVotingContextValue {
   connectWallet: () => void;
   uploadToIPFS: (file: File) => Promise<string>;
   createVoter: (formInput: FormInput, fileUrl: string, router: any) => void;
-  fetchVotingOrganizer: () => void;
   getAllVoterData: () => void;
+  setCandidate: (
+    candidateForm: CandidateForm,
+    fileUrl: string,
+    router: any
+  ) => void;
+  getAllCandidateData: () => void;
+  error: string;
+  voterArray: string[];
+  voterLength: string;
+  voterAddress: any[];
+  currentAccount: string;
+  candidateLength: string;
+  candidateArray: string[];
+  uploadToIPFSCandidate: (file: File) => Promise<string>;
 }
 
 const fetchContract = (signerOrProvider: any) =>
@@ -55,7 +68,6 @@ export const VotingProvider: React.FC<VotingProviderProps> = ({ children }) => {
   const [voterArray, setVoterArray] = useState(pushVoter);
   const [voterLength, setVoterLength] = useState("");
   const [voterAddress, setVoterAddress] = useState([]);
-  const [votingOrganizer, setVotingOrganizer] = useState<string>("");
 
   // Connecting Metamask
 
@@ -77,29 +89,6 @@ export const VotingProvider: React.FC<VotingProviderProps> = ({ children }) => {
       method: "eth_requestAccounts",
     });
     setCurrentAccount(account[0]);
-  };
-
-  const fetchVotingOrganizer = async (): Promise<void> => {
-    try {
-      if (window.ethereum) {
-        const web3Modal = new Web3modal();
-        const connection = await web3Modal.connect();
-        const provider = new ethers.BrowserProvider(connection);
-        const contract = new ethers.Contract(
-          VotingAddress,
-          VotingAddressABI,
-          provider
-        );
-
-        const organizer: string = await contract.votingOrganizer();
-        console.log("Voting Organizer:", organizer);
-        setVotingOrganizer(organizer);
-      } else {
-        console.error("Ethereum object doesn't exist!");
-      }
-    } catch (error) {
-      console.error("Error fetching voting organizer:", error);
-    }
   };
 
   //Upload to IPFS Voter Image
@@ -192,12 +181,11 @@ export const VotingProvider: React.FC<VotingProviderProps> = ({ children }) => {
       // Voter List
       const voterListData = await contract.getVoterList();
       setVoterAddress(voterListData);
-      console.log(voterAddress);
 
       voterListData.map(async (el: any) => {
         const singleVoterData = await contract.getVoterdata(el);
-        pushCandidate.push(singleVoterData);
-        console.log(singleVoterData);
+        pushVoter.push(singleVoterData);
+        setVoterArray(pushVoter);
       });
 
       // voter length
@@ -211,9 +199,126 @@ export const VotingProvider: React.FC<VotingProviderProps> = ({ children }) => {
     }
   };
 
-  useEffect(() => {
-    getAllVoterData();
-  }, []);
+  //-------- Give vote ---------//
+
+  const giveVote = async () => {
+    try {
+    } catch (error) {
+      setError("Something went wrong while giving vote");
+      console.error("Something went wrong while giving vote", error);
+    }
+  };
+
+  //------- Candidate Section ---------//
+
+  //Upload to IPFS Candidate Image
+  const uploadToIPFSCandidate = async (file: File): Promise<string> => {
+    if (file) {
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+        const response = await axios({
+          method: "post",
+          url: "https://api.pinata.cloud/pinning/pinFileToIPFS",
+          data: formData,
+          headers: {
+            pinata_api_key: `3bf9f01d86d0dc27853c`,
+            pinata_secret_api_key: `fe80536528d1a49dca334a1372336cd9951e130647f34b819f328ecd467afdd6`,
+            "Content-Type": "multipart/form-data",
+          },
+        });
+
+        // console.log("Pinata Response:", response.data);
+        const ImgHash = `https://gateway.pinata.cloud/ipfs/${response.data.IpfsHash}`;
+        return ImgHash;
+      } catch (error) {
+        console.log("Unable to upload Image to Pinata");
+        throw new Error("Unable to upload Image to Pinata");
+      }
+    }
+    throw new Error("File is not provided");
+  };
+
+  const setCandidate = async (
+    candidateForm: CandidateForm,
+    fileUrl: string,
+    router: any
+  ): Promise<void> => {
+    try {
+      const { name, address, age } = candidateForm;
+
+      if (!name || !address || !age) {
+        return setError("Input Data is missing");
+      }
+
+      console.log("Input Data:", name, address, age, fileUrl);
+
+      // Connecting Smart Contract
+      const web3modal = new Web3modal();
+      const connection = await web3modal.connect();
+      const provider = new ethers.BrowserProvider(connection);
+      const signer = await provider.getSigner();
+      const contract = fetchContract(signer);
+
+      const data = JSON.stringify({ address, age, name, image: fileUrl });
+      const response = await axios({
+        method: "post",
+        url: "https://api.pinata.cloud/pinning/pinJSONToIPFS",
+        data: data,
+        headers: {
+          pinata_api_key: `3bf9f01d86d0dc27853c`,
+          pinata_secret_api_key: `fe80536528d1a49dca334a1372336cd9951e130647f34b819f328ecd467afdd6`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      const url = `https://gateway.pinata.cloud/ipfs/${response.data.IpfsHash}`;
+      const candidate = await contract.setCandidate(
+        address,
+        age,
+        name,
+        url,
+        fileUrl
+      );
+      console.log("Transaction hash:", candidate.hash);
+      console.log("Candidate Info: ", candidate);
+      await candidate.wait();
+      router.push("/");
+    } catch (error) {
+      setError("Error in creating candidate");
+      console.error("Error creating candidate:", error);
+    }
+  };
+
+  const getAllCandidateData = async () => {
+    try {
+      // Connecting Smart Contract
+      const web3modal = new Web3modal();
+      const connection = await web3modal.connect();
+      const provider = new ethers.BrowserProvider(connection);
+      const signer = await provider.getSigner();
+      const contract = fetchContract(signer);
+
+      const allCandidateData = await contract.getCandidate();
+      console.log(allCandidateData);
+
+      allCandidateData.map(async (el: any) => {
+        const singleCandidateData = await contract.getCandidatedata(el);
+        pushCandidate.push(singleCandidateData);
+        console.log("Push Candidate Console: ", pushCandidate);
+        //console.log(singleCandidateData);
+        const value = Number(singleCandidateData[2]);
+        candidateIndex.push(value);
+      });
+
+      //----- Candidate Length ---------//
+      const allCandidateLength = await contract.getCandidateLength();
+      const numLength = allCandidateLength.toString();
+      setCandidateLength(numLength);
+    } catch (error) {
+      setError("Error in fetching candidate data");
+    }
+  };
 
   return (
     <VotingContext.Provider
@@ -223,12 +328,20 @@ export const VotingProvider: React.FC<VotingProviderProps> = ({ children }) => {
         connectWallet,
         uploadToIPFS,
         createVoter,
-        fetchVotingOrganizer,
         getAllVoterData,
+        setCandidate,
+        getAllCandidateData,
+        error,
+        voterArray,
+        voterLength,
+        voterAddress,
+        currentAccount,
+        candidateLength,
+        candidateArray,
+        uploadToIPFSCandidate,
       }}
     >
       {children}
-      <div>Voting Organizer: {votingOrganizer}</div>
     </VotingContext.Provider>
   );
 };
