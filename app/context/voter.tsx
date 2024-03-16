@@ -35,7 +35,7 @@ export interface IVotingContextValue {
     fileUrl: string,
     router: any
   ) => void;
-  getAllCandidateData: () => void;
+
   error: string;
   voterArray: string[];
   voterLength: string;
@@ -59,7 +59,7 @@ export const VotingProvider: React.FC<VotingProviderProps> = ({ children }) => {
   const [currentAccount, setCurrentAccount] = useState("");
   const [candidateLength, setCandidateLength] = useState("");
   const pushCandidate: string[] = [];
-  const candidateIndex = [];
+  const candidateIndex: number[] = [];
   const [candidateArray, setCandidateArray] = useState(pushCandidate);
   const [error, setError] = useState("");
   const highestVote = [];
@@ -290,36 +290,6 @@ export const VotingProvider: React.FC<VotingProviderProps> = ({ children }) => {
     }
   };
 
-  const getAllCandidateData = async () => {
-    try {
-      // Connecting Smart Contract
-      const web3modal = new Web3modal();
-      const connection = await web3modal.connect();
-      const provider = new ethers.BrowserProvider(connection);
-      const signer = await provider.getSigner();
-      const contract = fetchContract(signer);
-
-      const allCandidateData = await contract.getCandidate();
-      console.log(allCandidateData);
-
-      allCandidateData.map(async (el: any) => {
-        const singleCandidateData = await contract.getCandidatedata(el);
-        pushCandidate.push(singleCandidateData);
-        console.log("Push Candidate Console: ", pushCandidate);
-        //console.log(singleCandidateData);
-        const value = Number(singleCandidateData[2]);
-        candidateIndex.push(value);
-      });
-
-      //----- Candidate Length ---------//
-      const allCandidateLength = await contract.getCandidateLength();
-      const numLength = allCandidateLength.toString();
-      setCandidateLength(numLength);
-    } catch (error) {
-      setError("Error in fetching candidate data");
-    }
-  };
-
   return (
     <VotingContext.Provider
       value={{
@@ -330,7 +300,7 @@ export const VotingProvider: React.FC<VotingProviderProps> = ({ children }) => {
         createVoter,
         getAllVoterData,
         setCandidate,
-        getAllCandidateData,
+
         error,
         voterArray,
         voterLength,
