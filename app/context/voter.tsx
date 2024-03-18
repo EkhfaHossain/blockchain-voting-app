@@ -11,7 +11,7 @@ interface VotingProviderProps {
   children: React.ReactNode;
 }
 
-interface FormInput {
+interface VoterForm {
   name: string;
   address: string;
   position: string;
@@ -23,27 +23,48 @@ interface CandidateForm {
   age: string;
 }
 
+export interface CandidateData {
+  age: string;
+  name: string;
+  candidateId: bigint;
+  imageUrl: string;
+  voteCount: bigint;
+  ipfsUrl: string;
+  ethereumAddress: string;
+}
+
+export interface VoterData {
+  voterId: bigint;
+  name: string;
+  imageUrl: string;
+  ipfsUrl: string;
+  voterAllowed: bigint;
+  voterVoted: boolean;
+  ethereumAddress: string;
+}
+
 export interface IVotingContextValue {
   votingTitle: string;
   checkIfWalletIsConnected: () => void;
   connectWallet: () => void;
   uploadToIPFS: (file: File) => Promise<string>;
-  createVoter: (formInput: FormInput, fileUrl: string, router: any) => void;
+  createVoter: (voterForm: VoterForm, fileUrl: string, router: any) => void;
   getAllVoterData: () => void;
   setCandidate: (
     candidateForm: CandidateForm,
     fileUrl: string,
     router: any
   ) => void;
-
+  getAllCandidateData: () => void;
   error: string;
-  voterArray: string[];
+  voterArray: VoterData[];
   voterLength: string;
   voterAddress: any[];
   currentAccount: string;
   candidateLength: string;
-  candidateArray: string[];
+  candidateArray: CandidateData[];
   uploadToIPFSCandidate: (file: File) => Promise<string>;
+  giveVote: (id: any) => void;
 }
 
 const fetchContract = (signerOrProvider: any) =>
@@ -58,16 +79,16 @@ export const VotingProvider: React.FC<VotingProviderProps> = ({ children }) => {
   const router = useRouter();
   const [currentAccount, setCurrentAccount] = useState("");
   const [candidateLength, setCandidateLength] = useState("");
-  const pushCandidate: string[] = [];
-  const candidateIndex: number[] = [];
+  const pushCandidate: CandidateData[] = [];
+  const candidateIndex = [];
   const [candidateArray, setCandidateArray] = useState(pushCandidate);
   const [error, setError] = useState("");
   const highestVote = [];
 
-  const pushVoter: string[] = [];
+  const pushVoter: VoterData[] = [];
   const [voterArray, setVoterArray] = useState(pushVoter);
-  const [voterLength, setVoterLength] = useState("");
-  const [voterAddress, setVoterAddress] = useState([]);
+  const [voterLength, setVoterLength] = useState<string>("");
+  const [voterAddress, setVoterAddress] = useState<string[]>([]);
 
   // Connecting Metamask
 
@@ -81,6 +102,8 @@ export const VotingProvider: React.FC<VotingProviderProps> = ({ children }) => {
       setError("Please Install Metamask to connect or Reload");
     }
   };
+
+  console.log("Candidate Array: ", candidateArray);
 
   // Connect Wallet
   const connectWallet = async () => {
@@ -122,7 +145,7 @@ export const VotingProvider: React.FC<VotingProviderProps> = ({ children }) => {
   //-------- Create Voter ---------//
 
   const createVoter = async (
-    formInput: FormInput,
+    formInput: VoterForm,
     fileUrl: string,
     router: any
   ): Promise<void> => {
@@ -178,21 +201,30 @@ export const VotingProvider: React.FC<VotingProviderProps> = ({ children }) => {
       const signer = await provider.getSigner();
       const contract = fetchContract(signer);
 
-      // Voter List
-      const voterListData = await contract.getVoterList();
+      const voterListData: string[] = await contract.getVoterList();
+      console.log("All Vote Data:", voterListData);
       setVoterAddress(voterListData);
-
-      voterListData.map(async (el: any) => {
+      const updatedVoterArray: VoterData[] = [];
+      for (const el of voterListData) {
         const singleVoterData = await contract.getVoterdata(el);
+        console.log("Single Voter Data:", singleVoterData);
         pushVoter.push(singleVoterData);
-        setVoterArray(pushVoter);
-      });
+        const voterData: VoterData = {
+          voterId: singleVoterData[0],
+          name: singleVoterData[1],
+          imageUrl: singleVoterData[4],
+          voterAllowed: singleVoterData[5],
+          voterVoted: singleVoterData[6],
+          ipfsUrl: singleVoterData[2],
+          ethereumAddress: singleVoterData[3],
+        };
+        updatedVoterArray.push(voterData);
+      }
 
-      // voter length
+      setVoterArray(updatedVoterArray);
+
       const voterList = await contract.getVoterLength();
-      const numLength = voterList.toString();
-      console.log(numLength);
-      setVoterLength(numLength);
+      setVoterLength(voterList.toString());
     } catch (error) {
       setError("Something went wrong while fetching data");
       console.error("Something went wrong while fetching data", error);
@@ -201,8 +233,19 @@ export const VotingProvider: React.FC<VotingProviderProps> = ({ children }) => {
 
   //-------- Give vote ---------//
 
-  const giveVote = async () => {
+  const giveVote = async (id: any) => {
     try {
+      // Connecting Smart Contract
+      const voterAddress = id.address;
+      const voterId = id.id;
+      const web3modal = new Web3modal();
+      const connection = await web3modal.connect();
+      const provider = new ethers.BrowserProvider(connection);
+      const signer = await provider.getSigner();
+      const contract = fetchContract(signer);
+
+      const voterList = await contract.vote(voterAddress, voterId);
+      console.log(voterList);
     } catch (error) {
       setError("Something went wrong while giving vote");
       console.error("Something went wrong while giving vote", error);
@@ -290,6 +333,48 @@ export const VotingProvider: React.FC<VotingProviderProps> = ({ children }) => {
     }
   };
 
+  const getAllCandidateData = async () => {
+    try {
+      // Connecting Smart Contract
+      const web3modal = new Web3modal();
+      const connection = await web3modal.connect();
+      const provider = new ethers.BrowserProvider(connection);
+      const signer = await provider.getSigner();
+      const contract = fetchContract(signer);
+
+      const allCandidateData: string[] = await contract.getCandidate();
+      console.log("All Candidate Data:", allCandidateData);
+
+      const updatedCandidateArray: CandidateData[] = [];
+
+      for (const el of allCandidateData) {
+        const singleCandidateData = await contract.getCandidatedata(el);
+        console.log("Single Candidate Data: ", singleCandidateData);
+        pushCandidate.push(singleCandidateData);
+        const candidateIdAsNumber = Number(singleCandidateData[2]);
+        candidateIndex.push(candidateIdAsNumber);
+        const candidateData: CandidateData = {
+          candidateId: singleCandidateData[2],
+          name: singleCandidateData[1],
+          age: singleCandidateData[0],
+          imageUrl: singleCandidateData[5],
+          voteCount: singleCandidateData[4],
+          ipfsUrl: singleCandidateData[3],
+          ethereumAddress: singleCandidateData[6],
+        };
+        updatedCandidateArray.push(candidateData);
+      }
+
+      setCandidateArray(updatedCandidateArray);
+
+      //----- Candidate Length ---------//
+      const allCandidateLength = await contract.getCandidateLength();
+      setCandidateLength(allCandidateLength.toString());
+    } catch (error) {
+      setError("Error in fetching candidate data");
+    }
+  };
+
   return (
     <VotingContext.Provider
       value={{
@@ -300,7 +385,7 @@ export const VotingProvider: React.FC<VotingProviderProps> = ({ children }) => {
         createVoter,
         getAllVoterData,
         setCandidate,
-
+        getAllCandidateData,
         error,
         voterArray,
         voterLength,
@@ -309,6 +394,7 @@ export const VotingProvider: React.FC<VotingProviderProps> = ({ children }) => {
         candidateLength,
         candidateArray,
         uploadToIPFSCandidate,
+        giveVote,
       }}
     >
       {children}
