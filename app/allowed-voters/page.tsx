@@ -23,7 +23,7 @@ const allowedVoters: React.FC = () => {
   });
 
   const router = useRouter();
-  const { uploadToIPFS, createVoter } = useContext(
+  const { uploadToIPFS, createVoter, voterArray, getAllVoterData } = useContext(
     VotingContext
   ) as IVotingContextValue;
 
@@ -41,6 +41,11 @@ const allowedVoters: React.FC = () => {
     },
     maxSize: 5000000,
   });
+
+  useEffect(() => {
+    getAllVoterData();
+    console.log("Voter Array", voterArray);
+  }, []);
 
   return (
     <div className={Style.createVoter}>
@@ -68,18 +73,17 @@ const allowedVoters: React.FC = () => {
               <p className={Style.sideInfo_para}> Contract Candidate List </p>
             </div>
             <div className={Style.card}>
-              {/* {voterArray.map((el, i) => (
+              {voterArray.map((el, i) => (
                 <div key={i + 1} className={Style.card_box}>
                   <div className={Style.image}>
-                    <img src="" alt="Profile Photo" />
+                    <img src={el.imageUrl} alt="Profile Photo" />
                   </div>
                   <div className={Style.card_info}>
-                    <p> Name </p>
-                    <p> Address </p>
-                    <p> Position </p>
+                    <p> {el.name} </p>
+                    <p> Address: {el.ethereumAddress.slice(0, 10)}.. </p>
                   </div>
                 </div>
-              ))} */}
+              ))}
             </div>
           </div>
         )}
