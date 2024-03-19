@@ -29,7 +29,7 @@ const Card: React.FC<ICardProps> = ({ candidateArray, giveVote }) => {
             <button
               onClick={() =>
                 giveVote({
-                  id: el.candidateId.toString(),
+                  id: el.candidateId,
                   address: el.ethereumAddress,
                 })
               }
