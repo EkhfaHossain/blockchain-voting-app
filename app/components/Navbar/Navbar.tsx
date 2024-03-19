@@ -5,7 +5,7 @@ import Link from "next/link";
 import { AiFillLock, AiFillUnlock } from "react-icons/ai";
 import { VotingContext, IVotingContextValue } from "../../context/voter";
 import Style from "./Navbar.module.css";
-import loadingImage from "../../../assets/loading.gif";
+import logoImage from "../../../assets/blockchain.png";
 import path from "path";
 
 const Navbar = () => {
@@ -35,7 +35,9 @@ const Navbar = () => {
       )}
       <div className={Style.navbar_box}>
         <div className={Style.title}>
-          <Link href={{ pathname: "/" }}></Link>
+          <Link href={{ pathname: "/" }}>
+            <Image src={logoImage} alt="logo" height={80} width={80} />
+          </Link>
         </div>
         <div className={Style.connect}>
           {currentAccount ? (
