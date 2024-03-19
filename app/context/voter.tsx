@@ -125,8 +125,8 @@ export const VotingProvider: React.FC<VotingProviderProps> = ({ children }) => {
           url: "https://api.pinata.cloud/pinning/pinFileToIPFS",
           data: formData,
           headers: {
-            pinata_api_key: `3bf9f01d86d0dc27853c`,
-            pinata_secret_api_key: `fe80536528d1a49dca334a1372336cd9951e130647f34b819f328ecd467afdd6`,
+            pinata_api_key: `1b3a6e198de72bcb2792`,
+            pinata_secret_api_key: `bad5701dbf486a2ff7d437271e127b21bca6892e7f75df1e719712302614ddad`,
             "Content-Type": "multipart/form-data",
           },
         });
@@ -171,8 +171,8 @@ export const VotingProvider: React.FC<VotingProviderProps> = ({ children }) => {
         url: "https://api.pinata.cloud/pinning/pinJSONToIPFS",
         data: data,
         headers: {
-          pinata_api_key: `3bf9f01d86d0dc27853c`,
-          pinata_secret_api_key: `fe80536528d1a49dca334a1372336cd9951e130647f34b819f328ecd467afdd6`,
+          pinata_api_key: `1b3a6e198de72bcb2792`,
+          pinata_secret_api_key: `bad5701dbf486a2ff7d437271e127b21bca6892e7f75df1e719712302614ddad`,
           "Content-Type": "application/json",
         },
       });
@@ -244,8 +244,8 @@ export const VotingProvider: React.FC<VotingProviderProps> = ({ children }) => {
       const signer = await provider.getSigner();
       const contract = fetchContract(signer);
 
-      const voterList = await contract.vote(voterAddress, voterId);
-      console.log(voterList);
+      const voteredList = await contract.vote(voterAddress, voterId);
+      console.log(voteredList);
     } catch (error) {
       setError("Something went wrong while giving vote");
       console.error("Something went wrong while giving vote", error);
@@ -265,8 +265,8 @@ export const VotingProvider: React.FC<VotingProviderProps> = ({ children }) => {
           url: "https://api.pinata.cloud/pinning/pinFileToIPFS",
           data: formData,
           headers: {
-            pinata_api_key: `3bf9f01d86d0dc27853c`,
-            pinata_secret_api_key: `fe80536528d1a49dca334a1372336cd9951e130647f34b819f328ecd467afdd6`,
+            pinata_api_key: `1b3a6e198de72bcb2792`,
+            pinata_secret_api_key: `bad5701dbf486a2ff7d437271e127b21bca6892e7f75df1e719712302614ddad`,
             "Content-Type": "multipart/form-data",
           },
         });
@@ -309,8 +309,8 @@ export const VotingProvider: React.FC<VotingProviderProps> = ({ children }) => {
         url: "https://api.pinata.cloud/pinning/pinJSONToIPFS",
         data: data,
         headers: {
-          pinata_api_key: `3bf9f01d86d0dc27853c`,
-          pinata_secret_api_key: `fe80536528d1a49dca334a1372336cd9951e130647f34b819f328ecd467afdd6`,
+          pinata_api_key: `1b3a6e198de72bcb2792`,
+          pinata_secret_api_key: `bad5701dbf486a2ff7d437271e127b21bca6892e7f75df1e719712302614ddad`,
           "Content-Type": "application/json",
         },
       });
