@@ -4,6 +4,7 @@ import Web3modal from "web3modal";
 import { ethers } from "ethers";
 import { create as ipfsHttpClient } from "ipfs-http-client";
 import axios from "axios";
+import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { VotingAddress, VotingAddressABI } from "./constants";
 
@@ -103,8 +104,6 @@ export const VotingProvider: React.FC<VotingProviderProps> = ({ children }) => {
     }
   };
 
-  console.log("Candidate Array: ", candidateArray);
-
   // Connect Wallet
   const connectWallet = async () => {
     if (!window.ethereum) return setError("Please Install Metamask");
@@ -179,14 +178,16 @@ export const VotingProvider: React.FC<VotingProviderProps> = ({ children }) => {
 
       const url = `https://gateway.pinata.cloud/ipfs/${response.data.IpfsHash}`;
       const voter = await contract.voterRight(address, name, url, fileUrl);
-      console.log("Transaction hash:", voter.hash);
-      console.log("Voter Info: ", voter);
       await voter.wait();
-      console.log("Transaction mined");
       router.push("/voter-list");
-    } catch (error) {
-      setError("Error in creating Voter");
-      console.error("Error creating voter:", error);
+    } catch (error: any) {
+      let errorMessage = "An error occurred while creating the voter.";
+      if (error.reason) {
+        errorMessage = error.reason.toString();
+      } else if (error.message) {
+        errorMessage = error.message.toString();
+      }
+      toast.error(errorMessage);
     }
   };
 
@@ -202,12 +203,10 @@ export const VotingProvider: React.FC<VotingProviderProps> = ({ children }) => {
       const contract = fetchContract(signer);
 
       const voterListData: string[] = await contract.getVoterList();
-      console.log("All Vote Data:", voterListData);
       setVoterAddress(voterListData);
       const updatedVoterArray: VoterData[] = [];
       for (const el of voterListData) {
         const singleVoterData = await contract.getVoterdata(el);
-        console.log("Single Voter Data:", singleVoterData);
         pushVoter.push(singleVoterData);
         const voterData: VoterData = {
           voterId: singleVoterData[0],
@@ -225,8 +224,7 @@ export const VotingProvider: React.FC<VotingProviderProps> = ({ children }) => {
 
       const voterList = await contract.getVoterLength();
       setVoterLength(voterList.toString());
-    } catch (error) {
-      setError("Something went wrong while fetching data");
+    } catch (error: any) {
       console.error("Something went wrong while fetching data", error);
     }
   };
@@ -236,6 +234,7 @@ export const VotingProvider: React.FC<VotingProviderProps> = ({ children }) => {
   const giveVote = async (id: any) => {
     try {
       // Connecting Smart Contract
+      const { address, id: candidateId } = id;
       const voterAddress = id.address;
       const voterId = id.id;
       const web3modal = new Web3modal();
@@ -246,9 +245,25 @@ export const VotingProvider: React.FC<VotingProviderProps> = ({ children }) => {
 
       const voteredList = await contract.vote(voterAddress, voterId);
       console.log(voteredList);
-    } catch (error) {
-      setError("Something went wrong while giving vote");
-      console.error("Something went wrong while giving vote", error);
+      const updatedCandidateArray = candidateArray.map((candidate) => {
+        if (candidate.candidateId === candidateId) {
+          return {
+            ...candidate,
+            voteCount: candidate.voteCount + BigInt(1),
+          };
+        }
+        return candidate;
+      });
+      setCandidateArray(updatedCandidateArray);
+      console.log(updatedCandidateArray);
+    } catch (error: any) {
+      let errorMessage = "Something went wrong while giving vote";
+      if (error.reason) {
+        errorMessage = error.reason.toString();
+      } else if (error.message) {
+        errorMessage = error.message.toString();
+      }
+      toast.error(errorMessage);
     }
   };
 
@@ -293,9 +308,6 @@ export const VotingProvider: React.FC<VotingProviderProps> = ({ children }) => {
       if (!name || !address || !age) {
         return setError("Input Data is missing");
       }
-
-      console.log("Input Data:", name, address, age, fileUrl);
-
       // Connecting Smart Contract
       const web3modal = new Web3modal();
       const connection = await web3modal.connect();
@@ -323,13 +335,16 @@ export const VotingProvider: React.FC<VotingProviderProps> = ({ children }) => {
         url,
         fileUrl
       );
-      console.log("Transaction hash:", candidate.hash);
-      console.log("Candidate Info: ", candidate);
       await candidate.wait();
       router.push("/");
-    } catch (error) {
-      setError("Error in creating candidate");
-      console.error("Error creating candidate:", error);
+    } catch (error: any) {
+      let errorMessage = "Something went wrong while creating candidate";
+      if (error.reason) {
+        errorMessage = error.reason.toString();
+      } else if (error.message) {
+        errorMessage = error.message.toString();
+      }
+      toast.error(errorMessage);
     }
   };
 
@@ -343,13 +358,10 @@ export const VotingProvider: React.FC<VotingProviderProps> = ({ children }) => {
       const contract = fetchContract(signer);
 
       const allCandidateData: string[] = await contract.getCandidate();
-      console.log("All Candidate Data:", allCandidateData);
-
       const updatedCandidateArray: CandidateData[] = [];
 
       for (const el of allCandidateData) {
         const singleCandidateData = await contract.getCandidatedata(el);
-        console.log("Single Candidate Data: ", singleCandidateData);
         pushCandidate.push(singleCandidateData);
         const candidateIdAsNumber = Number(singleCandidateData[2]);
         candidateIndex.push(candidateIdAsNumber);
@@ -370,8 +382,8 @@ export const VotingProvider: React.FC<VotingProviderProps> = ({ children }) => {
       //----- Candidate Length ---------//
       const allCandidateLength = await contract.getCandidateLength();
       setCandidateLength(allCandidateLength.toString());
-    } catch (error) {
-      setError("Error in fetching candidate data");
+    } catch (error: any) {
+      console.log("Error in fetching Candidate Data", error);
     }
   };
 

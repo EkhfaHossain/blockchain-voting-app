@@ -47,7 +47,6 @@ const candidateRegistration: React.FC = () => {
 
   useEffect(() => {
     getAllCandidateData();
-    console.log("Candidate Array", candidateArray);
   }, []);
 
   return (
