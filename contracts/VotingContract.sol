@@ -77,6 +77,7 @@ contract Create {
 
     function setCandidate(address _address, string memory _age, string memory _name, string memory _image, string memory _ipfs) public {
         require( votingOrganizer == msg.sender, "Only Organizer can autorize candidate");
+        require(candidates[_address]._address != _address, "Candidate with this address already exists");
 
         _candidateId.increment();
 
@@ -127,7 +128,7 @@ contract Create {
         uint256 idNumber = _voterId.current();
         Voter storage voter = voters[_address];
 
-        require(voter.voter_allowed == 0);
+        require(voter.voter_allowed == 0, "Voter with this address already exists");
 
         voter.voter_allowed = 1;
         voter.voter_name = _name;
