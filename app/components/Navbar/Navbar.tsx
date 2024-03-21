@@ -6,14 +6,13 @@ import { AiFillLock, AiFillUnlock } from "react-icons/ai";
 import { VotingContext, IVotingContextValue } from "../../context/voter";
 import Style from "./Navbar.module.css";
 import logoImage from "../../../assets/blockchain.png";
-import path from "path";
 
 const Navbar = () => {
   const { connectWallet, error, currentAccount } = useContext(
     VotingContext
   ) as IVotingContextValue;
 
-  const [openNav, setOpenNav] = useState(true);
+  const [openNav, setOpenNav] = useState(false);
 
   const openNavigation = () => {
     if (openNav) {

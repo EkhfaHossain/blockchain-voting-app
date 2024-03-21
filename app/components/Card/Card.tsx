@@ -20,7 +20,7 @@ const Card: React.FC<ICardProps> = ({ candidateArray, giveVote }) => {
             <h2>{el.name}</h2>
             <p> Age: {el.age}</p>
             <p> Address: {el.ethereumAddress.slice(0, 10)}..</p>
-            <p className={Style.total}> Total Vote:</p>
+            <p className={Style.total}> Total Vote</p>
           </div>
           <div className={Style.card_vote}>
             <p>{el.voteCount.toString()}</p>
