@@ -21,7 +21,7 @@ const VoterCard: React.FC<IVoterCardProps> = ({ voterArray }) => {
             <p>Adress: {el.ethereumAddress.slice(0, 30)}...</p>
             <p> Details</p>
             <p className={voterCardStyle.vote_Status}>
-              {el.voterVoted == true ? "You already voted" : "Not Voted"}
+              {el.voterVoted == true ? "Already voted" : "Not Voted"}
             </p>
           </div>
         </div>
