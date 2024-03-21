@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { VotingProvider } from "./context/voter";
 import Navbar from "../app/components/Navbar/Navbar";
+import { Toaster } from "react-hot-toast";
 
 export default function RootLayout({
   children,
@@ -12,6 +13,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <Toaster position="top-center" />
         <VotingProvider>
           <Navbar />
           {children}

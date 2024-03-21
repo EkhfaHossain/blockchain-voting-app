@@ -27,11 +27,11 @@
   font-size: 1.5rem;
   color: #b3b8cd;
   line-height: 0;
-  position: absolute;
+  position: relative;
 }
 
 .winner_message small {
-  font-size: 5rem;
+  font-size: 4rem;
   top: 43%;
   left: 50%;
   transform: translate(-50%, -50%);
