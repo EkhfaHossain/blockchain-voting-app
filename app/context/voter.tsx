@@ -102,7 +102,9 @@ export const VotingProvider: React.FC<IVotingProviderProps> = ({
     if (account.length) {
       setCurrentAccount(account[0]);
     } else {
-      setError("Please Install Metamask to connect or Reload");
+      setError(
+        "Please Install MetaMask to connect and reload the page to start"
+      );
     }
   };
 

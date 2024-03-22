@@ -21,6 +21,11 @@ const Navbar = () => {
       setOpenNav(true);
     }
   };
+
+  const handleConnectWallet = () => {
+    connectWallet();
+  };
+
   return (
     <div className={Style.navbar}>
       {error == "" ? (
@@ -77,7 +82,7 @@ const Navbar = () => {
               )}
             </div>
           ) : (
-            <button onClick={() => connectWallet()}> Connect Wallet </button>
+            <button onClick={handleConnectWallet}> Connect Wallet </button>
           )}
         </div>
       </div>
