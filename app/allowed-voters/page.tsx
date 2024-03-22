@@ -7,8 +7,10 @@ import { VotingContext, IVotingContextValue } from "../context/voter";
 import Button from "../components/Button/Button";
 import Style from "./allowedVoter.module.css";
 import Input from "../components/Input/Input";
+import fileUploadImage from "../../assets/upload.png";
+import staticImage from "../../assets/create.jpg";
 
-interface FormInput {
+interface IFormInput {
   name: string;
   address: string;
   position: string;
@@ -16,7 +18,7 @@ interface FormInput {
 
 const allowedVoters: React.FC = () => {
   const [fileUrl, setFileUrl] = useState<string | null>(null);
-  const [formInput, setFormInput] = useState<FormInput>({
+  const [formInput, setFormInput] = useState<IFormInput>({
     name: "",
     address: "",
     position: "",
@@ -99,7 +101,7 @@ const allowedVoters: React.FC = () => {
                   <p>Upload File: JPG PNG, GIF max 10MB</p>
                   <div className={Style.voter_container_box_div_image}>
                     <Image
-                      src="/upload.png"
+                      src={fileUploadImage}
                       alt="File Upload"
                       width={150}
                       height={150}
@@ -155,7 +157,7 @@ const allowedVoters: React.FC = () => {
       <div className={Style.createdVoter}>
         <div className={Style.createdVoter_info}>
           <Image
-            src="/create.jpg"
+            src={staticImage}
             alt="user profile"
             width={150}
             height={150}
@@ -165,8 +167,8 @@ const allowedVoters: React.FC = () => {
             Organizer <span> 0X9334567....</span>
           </p>
           <p>
-            Only Organizer of the Voter contract can create Voter for voting
-            Application
+            Only Organizer of the Voter contract can create Voter & Candidate
+            for voting Application
           </p>
         </div>
       </div>

@@ -1,10 +1,10 @@
 import React, { useEffect } from "react";
-import { CandidateData } from "../../context/voter";
+import { ICandidateData } from "../../context/voter";
 import Image from "next/image";
 import Style from "./Card.module.css";
 
 interface ICardProps {
-  candidateArray: CandidateData[];
+  candidateArray: ICandidateData[];
   giveVote: (id: any) => void;
 }
 

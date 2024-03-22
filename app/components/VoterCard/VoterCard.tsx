@@ -2,10 +2,10 @@ import React from "react";
 import Style from "../Card/Card.module.css";
 import voterCardStyle from "./VoterCard.module.css";
 import Image from "next/image";
-import { VoterData } from "../../context/voter";
+import { IVoterData } from "../../context/voter";
 
 interface IVoterCardProps {
-  voterArray: VoterData[];
+  voterArray: IVoterData[];
 }
 
 const VoterCard: React.FC<IVoterCardProps> = ({ voterArray }) => {
@@ -21,7 +21,7 @@ const VoterCard: React.FC<IVoterCardProps> = ({ voterArray }) => {
             <p>Adress: {el.ethereumAddress.slice(0, 30)}...</p>
             <p> Details</p>
             <p className={voterCardStyle.vote_Status}>
-              {el.voterVoted == true ? "Already voted" : "Not Voted"}
+              {el.voterVoted == true ? "Already Voted" : "Not Voted"}
             </p>
           </div>
         </div>
