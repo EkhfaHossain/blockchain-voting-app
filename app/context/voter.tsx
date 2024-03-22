@@ -8,23 +8,23 @@ import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { VotingAddress, VotingAddressABI } from "./constants";
 
-interface VotingProviderProps {
+interface IVotingProviderProps {
   children: React.ReactNode;
 }
 
-interface VoterForm {
+interface IVoterForm {
   name: string;
   address: string;
   position: string;
 }
 
-interface CandidateForm {
+interface ICandidateForm {
   name: string;
   address: string;
   age: string;
 }
 
-export interface CandidateData {
+export interface ICandidateData {
   age: string;
   name: string;
   candidateId: bigint;
@@ -34,7 +34,7 @@ export interface CandidateData {
   ethereumAddress: string;
 }
 
-export interface VoterData {
+export interface IVoterData {
   voterId: bigint;
   name: string;
   imageUrl: string;
@@ -49,21 +49,21 @@ export interface IVotingContextValue {
   checkIfWalletIsConnected: () => void;
   connectWallet: () => void;
   uploadToIPFS: (file: File) => Promise<string>;
-  createVoter: (voterForm: VoterForm, fileUrl: string, router: any) => void;
+  createVoter: (voterForm: IVoterForm, fileUrl: string, router: any) => void;
   getAllVoterData: () => void;
   setCandidate: (
-    candidateForm: CandidateForm,
+    candidateForm: ICandidateForm,
     fileUrl: string,
     router: any
   ) => void;
   getAllCandidateData: () => void;
   error: string;
-  voterArray: VoterData[];
+  voterArray: IVoterData[];
   voterLength: string;
   voterAddress: any[];
   currentAccount: string;
   candidateLength: string;
-  candidateArray: CandidateData[];
+  candidateArray: ICandidateData[];
   uploadToIPFSCandidate: (file: File) => Promise<string>;
   giveVote: (id: any) => void;
 }
@@ -75,18 +75,20 @@ export const VotingContext = React.createContext<
   IVotingContextValue | undefined
 >(undefined);
 
-export const VotingProvider: React.FC<VotingProviderProps> = ({ children }) => {
+export const VotingProvider: React.FC<IVotingProviderProps> = ({
+  children,
+}) => {
   const votingTitle = "My first Smart Contract App";
   const router = useRouter();
   const [currentAccount, setCurrentAccount] = useState("");
   const [candidateLength, setCandidateLength] = useState("");
-  const pushCandidate: CandidateData[] = [];
+  const pushCandidate: ICandidateData[] = [];
   const candidateIndex = [];
   const [candidateArray, setCandidateArray] = useState(pushCandidate);
   const [error, setError] = useState("");
   const highestVote = [];
 
-  const pushVoter: VoterData[] = [];
+  const pushVoter: IVoterData[] = [];
   const [voterArray, setVoterArray] = useState(pushVoter);
   const [voterLength, setVoterLength] = useState<string>("");
   const [voterAddress, setVoterAddress] = useState<string[]>([]);
@@ -130,7 +132,6 @@ export const VotingProvider: React.FC<VotingProviderProps> = ({ children }) => {
           },
         });
 
-        // console.log("Pinata Response:", response.data);
         const ImgHash = `https://gateway.pinata.cloud/ipfs/${response.data.IpfsHash}`;
         return ImgHash;
       } catch (error) {
@@ -144,7 +145,7 @@ export const VotingProvider: React.FC<VotingProviderProps> = ({ children }) => {
   //-------- Create Voter ---------//
 
   const createVoter = async (
-    formInput: VoterForm,
+    formInput: IVoterForm,
     fileUrl: string,
     router: any
   ): Promise<void> => {
@@ -154,8 +155,6 @@ export const VotingProvider: React.FC<VotingProviderProps> = ({ children }) => {
       if (!name || !address || !position) {
         return console.log("Input Data is missing");
       }
-
-      console.log("Input Data:", name, address, position, fileUrl);
 
       // Connecting Smart Contract
       const web3modal = new Web3modal();
@@ -204,11 +203,11 @@ export const VotingProvider: React.FC<VotingProviderProps> = ({ children }) => {
 
       const voterListData: string[] = await contract.getVoterList();
       setVoterAddress(voterListData);
-      const updatedVoterArray: VoterData[] = [];
+      const updatedVoterArray: IVoterData[] = [];
       for (const el of voterListData) {
         const singleVoterData = await contract.getVoterdata(el);
         pushVoter.push(singleVoterData);
-        const voterData: VoterData = {
+        const voterData: IVoterData = {
           voterId: singleVoterData[0],
           name: singleVoterData[1],
           imageUrl: singleVoterData[4],
@@ -244,7 +243,7 @@ export const VotingProvider: React.FC<VotingProviderProps> = ({ children }) => {
       const contract = fetchContract(signer);
 
       const voteredList = await contract.vote(voterAddress, voterId);
-      console.log(voteredList);
+
       const updatedCandidateArray = candidateArray.map((candidate) => {
         if (candidate.candidateId === candidateId) {
           return {
@@ -255,7 +254,6 @@ export const VotingProvider: React.FC<VotingProviderProps> = ({ children }) => {
         return candidate;
       });
       setCandidateArray(updatedCandidateArray);
-      console.log(updatedCandidateArray);
     } catch (error: any) {
       let errorMessage = "Something went wrong while giving vote";
       if (error.reason) {
@@ -290,7 +288,7 @@ export const VotingProvider: React.FC<VotingProviderProps> = ({ children }) => {
         const ImgHash = `https://gateway.pinata.cloud/ipfs/${response.data.IpfsHash}`;
         return ImgHash;
       } catch (error) {
-        console.log("Unable to upload Image to Pinata");
+        console.error("Unable to upload Image to Pinata");
         throw new Error("Unable to upload Image to Pinata");
       }
     }
@@ -298,7 +296,7 @@ export const VotingProvider: React.FC<VotingProviderProps> = ({ children }) => {
   };
 
   const setCandidate = async (
-    candidateForm: CandidateForm,
+    candidateForm: ICandidateForm,
     fileUrl: string,
     router: any
   ): Promise<void> => {
@@ -358,14 +356,14 @@ export const VotingProvider: React.FC<VotingProviderProps> = ({ children }) => {
       const contract = fetchContract(signer);
 
       const allCandidateData: string[] = await contract.getCandidate();
-      const updatedCandidateArray: CandidateData[] = [];
+      const updatedCandidateArray: ICandidateData[] = [];
 
       for (const el of allCandidateData) {
         const singleCandidateData = await contract.getCandidatedata(el);
         pushCandidate.push(singleCandidateData);
         const candidateIdAsNumber = Number(singleCandidateData[2]);
         candidateIndex.push(candidateIdAsNumber);
-        const candidateData: CandidateData = {
+        const candidateData: ICandidateData = {
           candidateId: singleCandidateData[2],
           name: singleCandidateData[1],
           age: singleCandidateData[0],

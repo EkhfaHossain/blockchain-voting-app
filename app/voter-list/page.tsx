@@ -5,7 +5,7 @@ import Style from "./VoterList.module.css";
 import {
   VotingContext,
   IVotingContextValue,
-  VoterData,
+  IVoterData,
 } from "../context/voter";
 
 const VoterList: React.FC = () => {
