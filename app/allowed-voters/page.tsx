@@ -9,6 +9,7 @@ import Style from "./allowedVoter.module.css";
 import Input from "../components/Input/Input";
 import fileUploadImage from "../../assets/upload.png";
 import staticImage from "../../assets/create.jpg";
+import toast from "react-hot-toast";
 
 interface IFormInput {
   name: string;
@@ -105,7 +106,6 @@ const allowedVoters: React.FC = () => {
                       alt="File Upload"
                       width={150}
                       height={150}
-                      objectFit="contain"
                     />
                   </div>
                   <p> Drag and Drop Files </p>
@@ -147,6 +147,7 @@ const allowedVoters: React.FC = () => {
                 if (fileUrl) {
                   createVoter(formInput, fileUrl, router);
                 } else {
+                  toast.error("File URL is null. Cannot create voter.");
                   console.log("File URL is null. Cannot create voter.");
                 }
               }}

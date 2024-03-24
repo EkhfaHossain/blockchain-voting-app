@@ -2,7 +2,6 @@
 import React, { useState, useContext, useEffect } from "react";
 import Style from "./index.module.css";
 import { VotingContext, IVotingContextValue } from "./context/voter";
-import Countdown from "react-countdown";
 import Card from "./components/Card/Card";
 
 const home = () => {
@@ -39,11 +38,6 @@ const home = () => {
                 Voter:<span>{voterLength}</span>
               </p>
             </div>
-          </div>
-          <div className={Style.winner_message}>
-            <small>
-              <Countdown date={Date.now() + 100000} />
-            </small>
           </div>
         </div>
       )}
