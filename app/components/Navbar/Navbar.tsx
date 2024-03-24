@@ -78,6 +78,9 @@ const Navbar = () => {
                   <p>
                     <Link href={{ pathname: "voter-list" }}>Voter List</Link>
                   </p>
+                  <p>
+                    <Link href={{ pathname: "winner" }}>Dashboard</Link>
+                  </p>
                 </div>
               )}
             </div>
