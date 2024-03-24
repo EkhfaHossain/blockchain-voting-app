@@ -48,6 +48,7 @@ export interface IVotingContextValue {
   votingTitle: string;
   checkIfWalletIsConnected: () => void;
   connectWallet: () => void;
+  checkCurrentAccount: () => void;
   uploadToIPFS: (file: File) => Promise<string>;
   createVoter: (voterForm: IVoterForm, fileUrl: string, router: any) => void;
   getAllVoterData: () => void;
@@ -66,6 +67,10 @@ export interface IVotingContextValue {
   candidateArray: ICandidateData[];
   uploadToIPFSCandidate: (file: File) => Promise<string>;
   giveVote: (id: any) => void;
+  startVotingPeriod: () => void;
+  endVotingPeriod: () => void;
+  determineWinner: () => void;
+  winnerInfo: ICandidateData | null;
 }
 
 const fetchContract = (signerOrProvider: any) =>
@@ -92,6 +97,7 @@ export const VotingProvider: React.FC<IVotingProviderProps> = ({
   const [voterArray, setVoterArray] = useState(pushVoter);
   const [voterLength, setVoterLength] = useState<string>("");
   const [voterAddress, setVoterAddress] = useState<string[]>([]);
+  const [winnerInfo, setWinnerInfo] = useState<ICandidateData | null>(null);
 
   // Connecting Metamask
 
@@ -115,6 +121,17 @@ export const VotingProvider: React.FC<IVotingProviderProps> = ({
       method: "eth_requestAccounts",
     });
     setCurrentAccount(account[0]);
+  };
+
+  const checkCurrentAccount = () => {
+    if (window.ethereum) {
+      window.ethereum.on("accountsChanged", async () => {
+        const accounts = await window.ethereum.request({
+          method: "eth_accounts",
+        });
+        setCurrentAccount(accounts[0]);
+      });
+    }
   };
 
   //Upload to IPFS Voter Image
@@ -234,7 +251,6 @@ export const VotingProvider: React.FC<IVotingProviderProps> = ({
 
   const giveVote = async (id: any) => {
     try {
-      // Connecting Smart Contract
       const { address, id: candidateId } = id;
       const voterAddress = id.address;
       const voterId = id.id;
@@ -256,6 +272,7 @@ export const VotingProvider: React.FC<IVotingProviderProps> = ({
         return candidate;
       });
       setCandidateArray(updatedCandidateArray);
+      toast.success("Vote Casted Successfully");
     } catch (error: any) {
       let errorMessage = "Something went wrong while giving vote";
       if (error.reason) {
@@ -387,11 +404,81 @@ export const VotingProvider: React.FC<IVotingProviderProps> = ({
     }
   };
 
+  const startVotingPeriod = async () => {
+    try {
+      const web3modal = new Web3modal();
+      const connection = await web3modal.connect();
+      const provider = new ethers.BrowserProvider(connection);
+      const signer = await provider.getSigner();
+      const contract = fetchContract(signer);
+      const startVoting = await contract.startVotingPeriod();
+      await startVoting.wait();
+    } catch (error: any) {
+      let errorMessage = "An error occurred while starting the voting period:";
+      if (error.reason) {
+        errorMessage = error.reason.toString();
+      } else if (error.message) {
+        errorMessage = error.message.toString();
+      }
+      toast.error(errorMessage);
+    }
+  };
+  const endVotingPeriod = async () => {
+    try {
+      const web3modal = new Web3modal();
+      const connection = await web3modal.connect();
+      const provider = new ethers.BrowserProvider(connection);
+      const signer = await provider.getSigner();
+      const contract = fetchContract(signer);
+      const endVoting = await contract.endVotingPeriod();
+      await endVoting.wait();
+    } catch (error: any) {
+      let errorMessage = "An error occurred while ending the voting period:";
+      if (error.reason) {
+        errorMessage = error.reason.toString();
+      } else if (error.message) {
+        errorMessage = error.message.toString();
+      }
+      toast.error(errorMessage);
+    }
+  };
+
+  const determineWinner = async () => {
+    try {
+      const web3modal = new Web3modal();
+      const connection = await web3modal.connect();
+      const provider = new ethers.BrowserProvider(connection);
+      const contract = fetchContract(provider);
+
+      const winnerInfo = await contract.getWinnerInfo();
+      console.log("Winner Info:", winnerInfo);
+
+      setWinnerInfo({
+        candidateId: winnerInfo[0],
+        name: winnerInfo[1],
+        age: winnerInfo[2],
+        imageUrl: winnerInfo[6],
+        voteCount: winnerInfo[4],
+        ipfsUrl: winnerInfo[3],
+        ethereumAddress: winnerInfo[5],
+      });
+    } catch (error: any) {
+      let errorMessage = "An error occurred while determining the winner:";
+      if (error.reason) {
+        errorMessage = error.reason.toString();
+      } else if (error.message) {
+        errorMessage = error.message.toString();
+      }
+      toast.error(errorMessage);
+    }
+  };
+
   return (
     <VotingContext.Provider
       value={{
         votingTitle,
         checkIfWalletIsConnected,
+        checkCurrentAccount,
         connectWallet,
         uploadToIPFS,
         createVoter,
@@ -407,6 +494,10 @@ export const VotingProvider: React.FC<IVotingProviderProps> = ({
         candidateArray,
         uploadToIPFSCandidate,
         giveVote,
+        startVotingPeriod,
+        endVotingPeriod,
+        determineWinner,
+        winnerInfo,
       }}
     >
       {children}
