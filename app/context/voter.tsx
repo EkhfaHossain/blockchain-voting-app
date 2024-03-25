@@ -71,6 +71,8 @@ export interface IVotingContextValue {
   endVotingPeriod: () => void;
   determineWinner: () => void;
   winnerInfo: ICandidateData | null;
+  getVotingStatus: () => void;
+  votingStatus: string;
 }
 
 const fetchContract = (signerOrProvider: any) =>
@@ -98,6 +100,7 @@ export const VotingProvider: React.FC<IVotingProviderProps> = ({
   const [voterLength, setVoterLength] = useState<string>("");
   const [voterAddress, setVoterAddress] = useState<string[]>([]);
   const [winnerInfo, setWinnerInfo] = useState<ICandidateData | null>(null);
+  const [votingStatus, setVotingStatus] = useState<string>("");
 
   // Connecting Metamask
 
@@ -423,6 +426,7 @@ export const VotingProvider: React.FC<IVotingProviderProps> = ({
       toast.error(errorMessage);
     }
   };
+
   const endVotingPeriod = async () => {
     try {
       const web3modal = new Web3modal();
@@ -473,6 +477,20 @@ export const VotingProvider: React.FC<IVotingProviderProps> = ({
     }
   };
 
+  const getVotingStatus = async () => {
+    try {
+      const web3modal = new Web3modal();
+      const connection = await web3modal.connect();
+      const provider = new ethers.BrowserProvider(connection);
+      const contract = fetchContract(provider);
+      const status = await contract.getVotingStatus();
+      setVotingStatus(status);
+    } catch (error: any) {
+      console.error("An error occurred while fetching voting status:", error);
+      toast.error("An error occurred while fetching voting status");
+    }
+  };
+
   return (
     <VotingContext.Provider
       value={{
@@ -498,6 +516,8 @@ export const VotingProvider: React.FC<IVotingProviderProps> = ({
         endVotingPeriod,
         determineWinner,
         winnerInfo,
+        getVotingStatus,
+        votingStatus,
       }}
     >
       {children}

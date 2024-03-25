@@ -72,6 +72,8 @@ contract Create {
     );
 
     //--------End of Voter Data----------- 
+    event VotingStarted();
+    event VotingEnded();
 
     constructor (){
         votingOrganizer = msg.sender;
@@ -195,6 +197,8 @@ contract Create {
 
         votingStarted = true;
         votingEnded = false; 
+
+        emit VotingStarted();
     }
 
     function endVotingPeriod() public {
@@ -203,6 +207,7 @@ contract Create {
         require(!votingEnded, "Voting period has already ended");
 
         votingEnded = true; 
+        emit VotingEnded();
     }
 
     function determineWinner() public view returns (address) {
@@ -236,6 +241,17 @@ contract Create {
             winner.ipfs
         );
     }
+
+    function getVotingStatus() public view returns (string memory) {
+        if (votingEnded) {
+            return "Voting has ended";
+        } else if (votingStarted) {
+            return "Voting is ongoing";
+        } else {
+            return "Voting has not started yet";
+    }
+}
+
 
 
 
