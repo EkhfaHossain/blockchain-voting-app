@@ -20,23 +20,6 @@
   gap: 1rem;
   align-items: center;
 }
-.winner_message {
-  background-color: #231e39;
-  padding: 2rem;
-  border-radius: 0.2rem;
-  font-size: 1.5rem;
-  color: #b3b8cd;
-  line-height: 0;
-  position: relative;
-}
-
-.winner_message small {
-  font-size: 4rem;
-  top: 43%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  position: absolute;
-}
 
 .candidate_list {
   background-color: #9a02ac;
@@ -52,6 +35,22 @@
   margin-left: 0.5rem;
   color: #b3b8cd;
   border-radius: 0.2rem;
+}
+
+.voting_status {
+  background-color: #231e39;
+  padding: 1rem;
+  border-radius: 0.2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.voting_status p {
+  color: #b3b8cd;
+  font-size: 2rem;
+  margin: 0;
+  align-items: center;
 }
 
 @media screen and (max-width: 35em) {

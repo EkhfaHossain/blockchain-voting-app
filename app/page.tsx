@@ -15,13 +15,18 @@ const home = () => {
     currentAccount,
     voterLength,
     giveVote,
+    getVotingStatus,
+    votingStatus,
   } = useContext(VotingContext) as IVotingContextValue;
 
   useEffect(() => {
     checkIfWalletIsConnected();
     getAllVoterData();
     getAllCandidateData();
+    getVotingStatus();
   }, []);
+
+  console.log("Voting Status:", votingStatus);
 
   return (
     <div className={Style.home}>
@@ -38,6 +43,9 @@ const home = () => {
                 Voter:<span>{voterLength}</span>
               </p>
             </div>
+          </div>
+          <div className={Style.voting_status}>
+            <p>{votingStatus}</p>
           </div>
         </div>
       )}
