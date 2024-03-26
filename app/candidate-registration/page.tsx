@@ -5,7 +5,7 @@ import { useDropzone } from "react-dropzone";
 import Image from "next/image";
 import { VotingContext, IVotingContextValue } from "../context/voter";
 import Button from "../components/Button/Button";
-import Style from "./allowedVoter.module.css";
+import Style from "../allowed-voters/allowedVoter.module.css";
 import Input from "../components/Input/Input";
 
 interface CandidateForm {
@@ -72,7 +72,6 @@ const candidateRegistration: React.FC = () => {
         {!fileUrl && (
           <div className={Style.sideInfo}>
             <div className={Style.sideInfo_box}>
-              <h4> Create candidate for Voting </h4>
               <p className={Style.sideInfo_para}> Contract Candidate List </p>
             </div>
             <div className={Style.card}>

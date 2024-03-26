@@ -72,8 +72,7 @@ const allowedVoters: React.FC = () => {
         {!fileUrl && (
           <div className={Style.sideInfo}>
             <div className={Style.sideInfo_box}>
-              <h4> Create candidate for Voting </h4>
-              <p className={Style.sideInfo_para}> Contract Candidate List </p>
+              <p className={Style.sideInfo_para}> Contract Voter List </p>
             </div>
             <div className={Style.card}>
               {voterArray.map((el, i) => (
