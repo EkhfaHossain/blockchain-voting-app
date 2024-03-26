@@ -1,6 +1,6 @@
-import React, { useEffect } from "react";
+"use client";
+import React, { useEffect, useState } from "react";
 import { ICandidateData } from "../../context/voter";
-import Image from "next/image";
 import Style from "./Card.module.css";
 
 interface ICardProps {
