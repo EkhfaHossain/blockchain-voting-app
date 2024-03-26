@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from "react";
 import Web3modal from "web3modal";
 import { ethers } from "ethers";
-import { create as ipfsHttpClient } from "ipfs-http-client";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
@@ -76,9 +75,6 @@ export interface IVotingContextValue {
   votingStarted: boolean;
 }
 
-const fetchContract = (signerOrProvider: any) =>
-  new ethers.Contract(VotingAddress, VotingAddressABI, signerOrProvider);
-
 export const VotingContext = React.createContext<
   IVotingContextValue | undefined
 >(undefined);
@@ -103,6 +99,26 @@ export const VotingProvider: React.FC<IVotingProviderProps> = ({
   const [winnerInfo, setWinnerInfo] = useState<ICandidateData | null>(null);
   const [votingStatus, setVotingStatus] = useState<string>("");
   const [votingStarted, setVotingStarted] = useState(false);
+
+  const fetchContract = (signerOrProvider: any) =>
+    new ethers.Contract(VotingAddress, VotingAddressABI, signerOrProvider);
+
+  const connectToContract = async () => {
+    try {
+      const web3modal = new Web3modal();
+      const connection = await web3modal.connect();
+      const provider = new ethers.BrowserProvider(connection);
+      const signer = await provider.getSigner();
+      const contract = fetchContract(signer);
+      return contract;
+    } catch (error: any) {
+      console.error(
+        "An error occurred while connecting to the contract:",
+        error
+      );
+      throw new Error("An error occurred while connecting to the contract");
+    }
+  };
 
   // Connecting Metamask
 
@@ -145,16 +161,18 @@ export const VotingProvider: React.FC<IVotingProviderProps> = ({
       try {
         const formData = new FormData();
         formData.append("file", file);
-        const response = await axios({
-          method: "post",
-          url: "https://api.pinata.cloud/pinning/pinFileToIPFS",
-          data: formData,
-          headers: {
-            pinata_api_key: `1b3a6e198de72bcb2792`,
-            pinata_secret_api_key: `bad5701dbf486a2ff7d437271e127b21bca6892e7f75df1e719712302614ddad`,
-            "Content-Type": "multipart/form-data",
-          },
-        });
+        const response = await axios.post(
+          "https://api.pinata.cloud/pinning/pinFileToIPFS",
+          formData,
+          {
+            headers: {
+              pinata_api_key: process.env.NEXT_PUBLIC_PINATA_API_KEY,
+              pinata_secret_api_key:
+                process.env.NEXT_PUBLIC_PINATA_SECRET_API_KEY,
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
 
         const ImgHash = `https://gateway.pinata.cloud/ipfs/${response.data.IpfsHash}`;
         return ImgHash;
@@ -180,24 +198,20 @@ export const VotingProvider: React.FC<IVotingProviderProps> = ({
         return console.log("Input Data is missing");
       }
 
-      // Connecting Smart Contract
-      const web3modal = new Web3modal();
-      const connection = await web3modal.connect();
-      const provider = new ethers.BrowserProvider(connection);
-      const signer = await provider.getSigner();
-      const contract = fetchContract(signer);
-
+      const contract = await connectToContract();
       const data = JSON.stringify({ name, address, position, image: fileUrl });
-      const response = await axios({
-        method: "post",
-        url: "https://api.pinata.cloud/pinning/pinJSONToIPFS",
-        data: data,
-        headers: {
-          pinata_api_key: `1b3a6e198de72bcb2792`,
-          pinata_secret_api_key: `bad5701dbf486a2ff7d437271e127b21bca6892e7f75df1e719712302614ddad`,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await axios.post(
+        "https://api.pinata.cloud/pinning/pinJSONToIPFS",
+        data,
+        {
+          headers: {
+            pinata_api_key: process.env.NEXT_PUBLIC_PINATA_API_KEY,
+            pinata_secret_api_key:
+              process.env.NEXT_PUBLIC_PINATA_SECRET_API_KEY,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       const url = `https://gateway.pinata.cloud/ipfs/${response.data.IpfsHash}`;
       const voter = await contract.voterRight(address, name, url, fileUrl);
@@ -211,6 +225,7 @@ export const VotingProvider: React.FC<IVotingProviderProps> = ({
       } else if (error.message) {
         errorMessage = error.message.toString();
       }
+      console.log(error);
       toast.error(errorMessage);
     }
   };
@@ -219,12 +234,7 @@ export const VotingProvider: React.FC<IVotingProviderProps> = ({
 
   const getAllVoterData = async () => {
     try {
-      // Connecting Smart Contract
-      const web3modal = new Web3modal();
-      const connection = await web3modal.connect();
-      const provider = new ethers.BrowserProvider(connection);
-      const signer = await provider.getSigner();
-      const contract = fetchContract(signer);
+      const contract = await connectToContract();
 
       const voterListData: string[] = await contract.getVoterList();
       setVoterAddress(voterListData);
@@ -260,11 +270,8 @@ export const VotingProvider: React.FC<IVotingProviderProps> = ({
       const { address, id: candidateId } = id;
       const voterAddress = id.address;
       const voterId = id.id;
-      const web3modal = new Web3modal();
-      const connection = await web3modal.connect();
-      const provider = new ethers.BrowserProvider(connection);
-      const signer = await provider.getSigner();
-      const contract = fetchContract(signer);
+
+      const contract = await connectToContract();
 
       const voteredList = await contract.vote(voterAddress, voterId);
 
@@ -298,18 +305,20 @@ export const VotingProvider: React.FC<IVotingProviderProps> = ({
       try {
         const formData = new FormData();
         formData.append("file", file);
-        const response = await axios({
-          method: "post",
-          url: "https://api.pinata.cloud/pinning/pinFileToIPFS",
-          data: formData,
-          headers: {
-            pinata_api_key: `1b3a6e198de72bcb2792`,
-            pinata_secret_api_key: `bad5701dbf486a2ff7d437271e127b21bca6892e7f75df1e719712302614ddad`,
-            "Content-Type": "multipart/form-data",
-          },
-        });
 
-        // console.log("Pinata Response:", response.data);
+        const response = await axios.post(
+          "https://api.pinata.cloud/pinning/pinFileToIPFS",
+          formData,
+          {
+            headers: {
+              pinata_api_key: process.env.NEXT_PUBLIC_PINATA_API_KEY,
+              pinata_secret_api_key:
+                process.env.NEXT_PUBLIC_PINATA_SECRET_API_KEY,
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+
         const ImgHash = `https://gateway.pinata.cloud/ipfs/${response.data.IpfsHash}`;
         return ImgHash;
       } catch (error) {
@@ -331,24 +340,21 @@ export const VotingProvider: React.FC<IVotingProviderProps> = ({
       if (!name || !address || !age) {
         return setError("Input Data is missing");
       }
-      // Connecting Smart Contract
-      const web3modal = new Web3modal();
-      const connection = await web3modal.connect();
-      const provider = new ethers.BrowserProvider(connection);
-      const signer = await provider.getSigner();
-      const contract = fetchContract(signer);
+      const contract = await connectToContract();
 
       const data = JSON.stringify({ address, age, name, image: fileUrl });
-      const response = await axios({
-        method: "post",
-        url: "https://api.pinata.cloud/pinning/pinJSONToIPFS",
-        data: data,
-        headers: {
-          pinata_api_key: `1b3a6e198de72bcb2792`,
-          pinata_secret_api_key: `bad5701dbf486a2ff7d437271e127b21bca6892e7f75df1e719712302614ddad`,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await axios.post(
+        "https://api.pinata.cloud/pinning/pinJSONToIPFS",
+        data,
+        {
+          headers: {
+            pinata_api_key: process.env.NEXT_PUBLIC_PINATA_API_KEY,
+            pinata_secret_api_key:
+              process.env.NEXT_PUBLIC_PINATA_SECRET_API_KEY,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       const url = `https://gateway.pinata.cloud/ipfs/${response.data.IpfsHash}`;
       const candidate = await contract.setCandidate(
@@ -374,13 +380,7 @@ export const VotingProvider: React.FC<IVotingProviderProps> = ({
 
   const getAllCandidateData = async () => {
     try {
-      // Connecting Smart Contract
-      const web3modal = new Web3modal();
-      const connection = await web3modal.connect();
-      const provider = new ethers.BrowserProvider(connection);
-      const signer = await provider.getSigner();
-      const contract = fetchContract(signer);
-
+      const contract = await connectToContract();
       const allCandidateData: string[] = await contract.getCandidate();
       const updatedCandidateArray: ICandidateData[] = [];
 
@@ -389,6 +389,7 @@ export const VotingProvider: React.FC<IVotingProviderProps> = ({
         pushCandidate.push(singleCandidateData);
         const candidateIdAsNumber = Number(singleCandidateData[2]);
         candidateIndex.push(candidateIdAsNumber);
+
         const candidateData: ICandidateData = {
           candidateId: singleCandidateData[2],
           name: singleCandidateData[1],
@@ -398,6 +399,7 @@ export const VotingProvider: React.FC<IVotingProviderProps> = ({
           ipfsUrl: singleCandidateData[3],
           ethereumAddress: singleCandidateData[6],
         };
+
         updatedCandidateArray.push(candidateData);
       }
 
@@ -413,11 +415,8 @@ export const VotingProvider: React.FC<IVotingProviderProps> = ({
 
   const startVotingPeriod = async () => {
     try {
-      const web3modal = new Web3modal();
-      const connection = await web3modal.connect();
-      const provider = new ethers.BrowserProvider(connection);
-      const signer = await provider.getSigner();
-      const contract = fetchContract(signer);
+      const contract = await connectToContract();
+
       const startVoting = await contract.startVotingPeriod();
       await startVoting.wait();
       setVotingStarted(true);
@@ -434,11 +433,7 @@ export const VotingProvider: React.FC<IVotingProviderProps> = ({
 
   const endVotingPeriod = async () => {
     try {
-      const web3modal = new Web3modal();
-      const connection = await web3modal.connect();
-      const provider = new ethers.BrowserProvider(connection);
-      const signer = await provider.getSigner();
-      const contract = fetchContract(signer);
+      const contract = await connectToContract();
       const endVoting = await contract.endVotingPeriod();
       await endVoting.wait();
       setVotingStarted(false);
@@ -455,13 +450,9 @@ export const VotingProvider: React.FC<IVotingProviderProps> = ({
 
   const determineWinner = async () => {
     try {
-      const web3modal = new Web3modal();
-      const connection = await web3modal.connect();
-      const provider = new ethers.BrowserProvider(connection);
-      const contract = fetchContract(provider);
+      const contract = await connectToContract();
 
       const winnerInfo = await contract.getWinnerInfo();
-      console.log("Winner Info:", winnerInfo);
 
       setWinnerInfo({
         candidateId: winnerInfo[0],
@@ -485,10 +476,7 @@ export const VotingProvider: React.FC<IVotingProviderProps> = ({
 
   const getVotingStatus = async () => {
     try {
-      const web3modal = new Web3modal();
-      const connection = await web3modal.connect();
-      const provider = new ethers.BrowserProvider(connection);
-      const contract = fetchContract(provider);
+      const contract = await connectToContract();
       const status = await contract.getVotingStatus();
       setVotingStatus(status);
     } catch (error: any) {

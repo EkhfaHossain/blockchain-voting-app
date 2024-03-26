@@ -19,6 +19,7 @@ interface IFormInput {
 
 const allowedVoters: React.FC = () => {
   const [fileUrl, setFileUrl] = useState<string | null>(null);
+  const [buttonClicked, setButtonClicked] = useState(false);
   const [formInput, setFormInput] = useState<IFormInput>({
     name: "",
     address: "",
@@ -45,10 +46,23 @@ const allowedVoters: React.FC = () => {
     maxSize: 5000000,
   });
 
+  const handleFormInputChange = (title: string, value: string) => {
+    setFormInput({ ...formInput, [title]: value });
+  };
+
+  const handleFormSubmit = () => {
+    if (fileUrl && !buttonClicked) {
+      createVoter(formInput, fileUrl, router);
+      setButtonClicked(true);
+    } else {
+      toast.error("File URL is null. Cannot create voter.");
+      console.log("File URL is null. Cannot create voter.");
+    }
+  };
+
   useEffect(() => {
     getAllVoterData();
-    console.log("Voter Array", voterArray);
-  }, []);
+  }, [getAllVoterData]);
 
   return (
     <div className={Style.createVoter}>
@@ -119,16 +133,14 @@ const allowedVoters: React.FC = () => {
             inputType="text"
             title="Name"
             placeholder="Voter Name"
-            handleclick={(e) =>
-              setFormInput({ ...formInput, name: e.target.value })
-            }
+            handleclick={(e) => handleFormInputChange("name", e.target.value)}
           />
           <Input
             inputType="text"
             title="Address"
             placeholder="Voter Address"
             handleclick={(e) =>
-              setFormInput({ ...formInput, address: e.target.value })
+              handleFormInputChange("address", e.target.value)
             }
           />
           <Input
@@ -136,20 +148,14 @@ const allowedVoters: React.FC = () => {
             title="Position"
             placeholder="Voter Position"
             handleclick={(e) =>
-              setFormInput({ ...formInput, position: e.target.value })
+              handleFormInputChange("position", e.target.value)
             }
           />
           <div className={Style.Button}>
             <Button
               btnName="Authorized Voter"
-              handleClick={() => {
-                if (fileUrl) {
-                  createVoter(formInput, fileUrl, router);
-                } else {
-                  toast.error("File URL is null. Cannot create voter.");
-                  console.log("File URL is null. Cannot create voter.");
-                }
-              }}
+              handleClick={handleFormSubmit}
+              disabled={buttonClicked}
             />
           </div>
         </div>
@@ -158,13 +164,13 @@ const allowedVoters: React.FC = () => {
         <div className={Style.createdVoter_info}>
           <Image
             src={staticImage}
-            alt="user profile"
+            alt="Static Image"
             width={150}
             height={150}
           />
           <p> Notice for User</p>
           <p>
-            Organizer <span> 0X9334567....</span>
+            Organizer <span> 0xf39Fd6e51....</span>
           </p>
           <p>
             Only Organizer of the Voter contract can create Voter & Candidate

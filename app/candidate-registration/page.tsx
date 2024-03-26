@@ -7,6 +7,9 @@ import { VotingContext, IVotingContextValue } from "../context/voter";
 import Button from "../components/Button/Button";
 import Style from "../allowed-voters/allowedVoter.module.css";
 import Input from "../components/Input/Input";
+import fileUploadImage from "../../assets/upload.png";
+import staticImage from "../../assets/create.jpg";
+import toast from "react-hot-toast";
 
 interface CandidateForm {
   name: string;
@@ -16,6 +19,7 @@ interface CandidateForm {
 
 const candidateRegistration: React.FC = () => {
   const [fileUrl, setFileUrl] = useState<string | null>(null);
+  const [buttonClicked, setButtonClicked] = useState(false);
   const [candidateForm, setCandidateForm] = useState<CandidateForm>({
     name: "",
     address: "",
@@ -44,6 +48,20 @@ const candidateRegistration: React.FC = () => {
     },
     maxSize: 5000000,
   });
+
+  const handleFormInputChange = (title: string, value: string) => {
+    setCandidateForm({ ...candidateForm, [title]: value });
+  };
+
+  const handleFormSubmit = () => {
+    if (fileUrl && !buttonClicked) {
+      setCandidate(candidateForm, fileUrl, router);
+      setButtonClicked(true);
+    } else {
+      toast.error("File URL is null. Cannot create candidate.");
+      console.log("File URL is null. Cannot create candidate.");
+    }
+  };
 
   useEffect(() => {
     getAllCandidateData();
@@ -101,7 +119,7 @@ const candidateRegistration: React.FC = () => {
                   <p>Upload File: JPG PNG, GIF max 10MB</p>
                   <div className={Style.voter_container_box_div_image}>
                     <Image
-                      src="/upload.png"
+                      src={fileUploadImage}
                       alt="File Upload"
                       width={150}
                       height={150}
@@ -120,36 +138,27 @@ const candidateRegistration: React.FC = () => {
             inputType="text"
             title="Name"
             placeholder="Candidate Name"
-            handleclick={(e) =>
-              setCandidateForm({ ...candidateForm, name: e.target.value })
-            }
+            handleclick={(e) => handleFormInputChange("name", e.target.value)}
           />
           <Input
             inputType="text"
             title="Address"
             placeholder="Candidate Address"
             handleclick={(e) =>
-              setCandidateForm({ ...candidateForm, address: e.target.value })
+              handleFormInputChange("address", e.target.value)
             }
           />
           <Input
             inputType="text"
             title="Age"
             placeholder="Candidate Age"
-            handleclick={(e) =>
-              setCandidateForm({ ...candidateForm, age: e.target.value })
-            }
+            handleclick={(e) => handleFormInputChange("age", e.target.value)}
           />
           <div className={Style.Button}>
             <Button
               btnName="Authorized Candidate"
-              handleClick={() => {
-                if (fileUrl) {
-                  setCandidate(candidateForm, fileUrl, router);
-                } else {
-                  console.log("File URL is null. Cannot create candidate.");
-                }
-              }}
+              handleClick={handleFormSubmit}
+              disabled={buttonClicked}
             />
           </div>
         </div>
@@ -157,14 +166,14 @@ const candidateRegistration: React.FC = () => {
       <div className={Style.createdVoter}>
         <div className={Style.createdVoter_info}>
           <Image
-            src="/create.jpg"
-            alt="user profile"
+            src={staticImage}
+            alt="Static Image"
             width={150}
             height={150}
           />
           <p> Notice for User</p>
           <p>
-            Organizer <span> 0X9334567....</span>
+            Organizer <span> 0xf39Fd6e51....</span>
           </p>
           <p>
             Only Organizer of the Voter contract can create Candidate for voting
