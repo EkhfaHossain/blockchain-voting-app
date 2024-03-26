@@ -17,9 +17,12 @@ const WinnerCard: React.FC<IWinnerCardProps> = ({ winnerInfo }) => {
           </div>
           <div className={Style.card_info}>
             <h2>{winnerInfo.name}</h2>
-            <p>Address: {winnerInfo.ethereumAddress.slice(0, 10)}...</p>
             <p>Age: {winnerInfo.age}</p>
-            <p>Total Vote: {winnerInfo.voteCount.toString()}</p>
+            <p>Address: {winnerInfo.ethereumAddress.slice(0, 10)}...</p>
+            <p className={Style.total}> Total Vote</p>
+          </div>
+          <div className={Style.card_vote}>
+            <p>{winnerInfo.voteCount.toString()}</p>
           </div>
         </div>
       ) : (

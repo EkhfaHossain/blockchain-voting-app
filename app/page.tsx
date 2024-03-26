@@ -6,7 +6,7 @@ import Card from "./components/Card/Card";
 
 const home = () => {
   const {
-    error,
+    checkCurrentAccount,
     getAllVoterData,
     getAllCandidateData,
     candidateArray,
@@ -21,6 +21,7 @@ const home = () => {
 
   useEffect(() => {
     checkIfWalletIsConnected();
+    checkCurrentAccount();
     getAllVoterData();
     getAllCandidateData();
     getVotingStatus();
