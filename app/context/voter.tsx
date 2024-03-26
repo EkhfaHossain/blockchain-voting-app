@@ -73,6 +73,7 @@ export interface IVotingContextValue {
   winnerInfo: ICandidateData | null;
   getVotingStatus: () => void;
   votingStatus: string;
+  votingStarted: boolean;
 }
 
 const fetchContract = (signerOrProvider: any) =>
@@ -101,6 +102,7 @@ export const VotingProvider: React.FC<IVotingProviderProps> = ({
   const [voterAddress, setVoterAddress] = useState<string[]>([]);
   const [winnerInfo, setWinnerInfo] = useState<ICandidateData | null>(null);
   const [votingStatus, setVotingStatus] = useState<string>("");
+  const [votingStarted, setVotingStarted] = useState(false);
 
   // Connecting Metamask
 
@@ -200,6 +202,7 @@ export const VotingProvider: React.FC<IVotingProviderProps> = ({
       const url = `https://gateway.pinata.cloud/ipfs/${response.data.IpfsHash}`;
       const voter = await contract.voterRight(address, name, url, fileUrl);
       await voter.wait();
+      toast.success("Registered Voter Successfully!");
       router.push("/voter-list");
     } catch (error: any) {
       let errorMessage = "An error occurred while creating the voter.";
@@ -356,6 +359,7 @@ export const VotingProvider: React.FC<IVotingProviderProps> = ({
         fileUrl
       );
       await candidate.wait();
+      toast.success("Registered Candidate Successfully!");
       router.push("/");
     } catch (error: any) {
       let errorMessage = "Something went wrong while creating candidate";
@@ -416,6 +420,7 @@ export const VotingProvider: React.FC<IVotingProviderProps> = ({
       const contract = fetchContract(signer);
       const startVoting = await contract.startVotingPeriod();
       await startVoting.wait();
+      setVotingStarted(true);
     } catch (error: any) {
       let errorMessage = "An error occurred while starting the voting period:";
       if (error.reason) {
@@ -436,6 +441,7 @@ export const VotingProvider: React.FC<IVotingProviderProps> = ({
       const contract = fetchContract(signer);
       const endVoting = await contract.endVotingPeriod();
       await endVoting.wait();
+      setVotingStarted(false);
     } catch (error: any) {
       let errorMessage = "An error occurred while ending the voting period:";
       if (error.reason) {
@@ -518,6 +524,7 @@ export const VotingProvider: React.FC<IVotingProviderProps> = ({
         winnerInfo,
         getVotingStatus,
         votingStatus,
+        votingStarted,
       }}
     >
       {children}
