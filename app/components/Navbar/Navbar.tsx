@@ -79,7 +79,7 @@ const Navbar = () => {
                     <Link href={{ pathname: "voter-list" }}>Voter List</Link>
                   </p>
                   <p>
-                    <Link href={{ pathname: "winner" }}>Dashboard</Link>
+                    <Link href={{ pathname: "dashboard" }}>Dashboard</Link>
                   </p>
                 </div>
               )}
