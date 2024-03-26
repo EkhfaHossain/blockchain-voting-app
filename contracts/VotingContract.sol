@@ -12,6 +12,8 @@ contract Create {
     Counters.Counter public _candidateId; 
 
     address public votingOrganizer; 
+    bool public votingStarted;
+    bool public votingEnded; 
 
     //--------------Candidate for Voting---------------------- 
 
@@ -73,10 +75,13 @@ contract Create {
 
     constructor (){
         votingOrganizer = msg.sender;
+        votingStarted = false;
+        votingEnded = false; 
     }
 
     function setCandidate(address _address, string memory _age, string memory _name, string memory _image, string memory _ipfs) public {
         require( votingOrganizer == msg.sender, "Only Organizer can autorize candidate");
+        require(candidates[_address]._address != _address, "Candidate with this address already exists");
 
         _candidateId.increment();
 
@@ -127,7 +132,7 @@ contract Create {
         uint256 idNumber = _voterId.current();
         Voter storage voter = voters[_address];
 
-        require(voter.voter_allowed == 0);
+        require(voter.voter_allowed == 0, "Voter with this address already exists");
 
         voter.voter_allowed = 1;
         voter.voter_name = _name;
@@ -147,6 +152,8 @@ contract Create {
 
     function vote(address _candidateAddress, uint256 _candidateVoteId) external{ 
         Voter storage voter = voters[msg.sender];
+        require(votingStarted, "Voting period has not started yet");
+        require(!votingEnded, "Voting period has already ended");
         require(!voter.voter_voted, "You have already Voted");
         require(voter.voter_allowed != 0 , 'You have no right to Vote');
 
@@ -181,5 +188,55 @@ contract Create {
     function getVoterList() public view returns (address[] memory) {
         return votersAddress;
     }
+
+     function startVotingPeriod() public {
+        require(msg.sender == votingOrganizer, "Only the organizer can start the voting period");
+        require(!votingStarted || votingEnded, "Voting period has already started");
+
+        votingStarted = true;
+        votingEnded = false; 
+    }
+
+    function endVotingPeriod() public {
+        require(msg.sender == votingOrganizer, "Only the organizer can end the voting period");
+        require(votingStarted, "Voting period has not started yet");
+        require(!votingEnded, "Voting period has already ended");
+
+        votingEnded = true; 
+    }
+
+    function determineWinner() public view returns (address) {
+        require(votingEnded, "Voting period has not ended yet");
+
+        address winnerAddress;
+        uint256 maxVotes = 0;
+
+        for (uint256 i = 0; i < candidateAddress.length; i++) {
+            address candidate = candidateAddress[i];
+            if (candidates[candidate].voteCount > maxVotes) {
+                maxVotes = candidates[candidate].voteCount;
+                winnerAddress = candidate;
+            }
+        }
+
+        return winnerAddress;
+    }
+
+    function getWinnerInfo() public view returns ( uint256 candidateId, string memory name, string memory age,string memory image, uint256 voteCount, address _address, string memory ipfs) {
+        address winnerAddress = determineWinner();
+        Candidate memory winner = candidates[winnerAddress];
+
+        return (
+            winner.candidateId,
+            winner.name,
+            winner.age,
+            winner.image,
+            winner.voteCount,
+            winner._address,
+            winner.ipfs
+        );
+    }
+
+
 
 }
