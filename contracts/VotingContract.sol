@@ -249,10 +249,7 @@ contract Create {
             return "Voting is ongoing";
         } else {
             return "Voting has not started yet";
+        }
     }
-}
-
-
-
 
 }
