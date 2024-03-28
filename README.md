@@ -17,7 +17,7 @@ Before setting up the application, ensure you have the following prerequisites i
 git clone <repository_url>
 cd <repository_directory>
 
-## Install Dependencies
+### 2. Install Dependencies
 
 ```bash
 npm install
