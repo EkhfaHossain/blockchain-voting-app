@@ -57,7 +57,7 @@ Once the application is running, users can perform the following actions:
 - View the list of registered candidates.
 - Cast their votes for preferred candidates.
 - Start and end the voting period (admin functionality).
-- Determine the winner of the election (admin functionality).
+- Determine the winner of the election.
 
 
 ## Conclusion
