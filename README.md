@@ -17,27 +17,6 @@ Before setting up the application, ensure you have the following prerequisites i
 git clone <repository_url>
 cd <repository_directory>
 
-### 2. Install Dependencies
-
-```bash
-npm install
-
-## Configure MetaMask
-Ensure MetaMask is installed in your browser. Connect MetaMask to the local test network.
-
-## Deploy Smart Contracts
-
-```bash
-npx hardhat node
-npx hardhat run scripts/deploy.js --network localhost
-
-## Run the Application
-
-```bash
-npm run dev
-
-## Access the Application
-Open your web browser and navigate to http://localhost:3000 to access the blockchain voting application.
 
 
 
