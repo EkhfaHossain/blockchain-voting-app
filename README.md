@@ -61,7 +61,7 @@ Once the application is running, users can perform the following actions:
 
 
 ## Conclusion
-This documentation provides a comprehensive guide for setting up and running a blockchain voting application. By following these steps, users can deploy their own decentralized voting system and explore the capabilities of blockchain technology in securely managing elections.
+This documentation provides a comprehensive guide for setting up and running a blockchain voting application. By following these steps, users can deploy their own decentralized voting system.
 
 
 
